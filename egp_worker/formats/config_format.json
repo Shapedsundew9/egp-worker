@@ -1,0 +1,121 @@
+{
+    "biome": {
+        "type": "dict",
+        "schema": {
+            "table": {
+                "type": "string",
+                "default": "biome_genomic_library",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+"
+            },
+            "database": {
+                "type": "string",
+                "default": "erasmus_db",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+",
+                "check_with": "valid_default_database",        
+                "dependencies": ["databases"]      
+            }
+        }
+    },
+    "microbiome": {
+        "type": "dict",
+        "schema": {
+            "table": {
+                "type": "string",
+                "default": "microbiome_genomic_library",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+"
+            },
+            "database": {
+                "type": "string",
+                "default": "erasmus_db",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+",
+                "dependencies": ["databases"]      
+            }
+        }
+    },
+    "gene_pool": {
+        "type": "dict",
+        "schema": {
+            "table": {
+                "type": "string",
+                "default": "gene_pool",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+"
+            },
+            "database": {
+                "type": "string",
+                "default": "erasmus_db",
+                "minlength": 1,
+                "maxlength": 64,
+                "regex": "[a-zA-Z0-9_-]+",
+                "dependencies": ["databases"]      
+            }
+        }
+    },
+    "databases": {
+        "type": "dict",
+        "default": {
+            "erasmus_db": {
+                "recreate": false,
+                "temp": false,
+                "host": "localhost",
+                "user": "erasmus",
+                "password": "erasmus",
+                "port": 5432,
+                "maintenance_db": "postgres"
+            }
+        },
+        "keysrules": {
+            "type": "string",
+            "minlength": 1,
+            "maxlength": 64,
+            "regex": "[a-zA-Z-_0-9]*"
+        },
+        "valuesrules": {
+            "type": "dict",
+            "schema": {
+                "recreate": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "temp": {
+                    "type": "boolean",
+                    "default": false
+                },
+                "host": {
+                    "type": "string",
+                    "default": "localhost",
+                    "regex": "(^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$|^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$)",
+                    "meta":{
+                        "description": "A valid RFC952 hostname or IP address."
+                    }
+                },
+                "user": {
+                    "type": "string",
+                    "default": "postgres"
+                },
+                "password": {
+                    "type": "string",
+                    "default": "postgres"
+                },
+                "port": {
+                    "type": "integer",
+                    "default": 5432,
+                    "min": 1024, "max": 65535
+                },
+                "maintenance_db": {
+                    "type": "string",
+                    "default": "postgres"
+                }
+            }
+        }
+    }
+}
