@@ -6,9 +6,11 @@ from typing import Any
 from egp_stores.gene_pool import gene_pool, default_config as gp_default_config
 from pypgtable.typing import TableConfig, TableConfigNorm
 from egp_stores.genomic_library import genomic_library, default_config as gl_default_config
+from egp_stores.typing import GenePoolConfigNorm
 from egp_population.population import population
 from sys import exit, stderr
 from .typing import WorkerConfig, WorkerConfigNorm
+from copy import deepcopy
 
 
 # FIXME: Add a version
@@ -38,15 +40,19 @@ else:
         exit(1)
 
     # Define gene pool configuration
-    gp_config: dict[str, TableConfigNorm] = gp_default_config()
+    gp_config: GenePoolConfigNorm = gp_default_config()
     base_name: str = config['gene_pool']['table']
     for key, table_config in gp_config.items():
-        table_config['table'] = config['gene_pool']['table'] if key == 'gene_pool' else config['gene_pool']['table'] + '_' + key
-        table_config['database'] = config['databases'][config['gene_pool']['database']]
+        if isinstance(table_config, TableConfigNorm):
+            table_config['table'] = config['gene_pool']['table'] if key == 'gene_pool' else config['gene_pool']['table'] + '_' + key
+            table_config['database'] = config['databases'][config['gene_pool']['database']]  #type: ignore
+        else:
+            raise AssertionError(f'table_config is a {type(table_config)}. This should not be possible!')
 
     # Define population configuration
     # The population configuration is persisted in the gene pool database
-    p_config: TableConfigNorm = gp_config['gene_pool']
+    p_config: TableConfigNorm = deepcopy(gp_config['gene_pool'])
+    p_config['table'] = p_config['table'] + '_populations'
 
     # Define genomic library configuration & instanciate
     gl_config: TableConfigNorm = gl_default_config()
