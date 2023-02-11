@@ -2,6 +2,7 @@ from json import load, dump
 from os.path import join, dirname
 from argparse import ArgumentParser, Namespace
 from egp_utils.base_validator import base_validator
+from egp_utils.egp_logo import header, header_lines
 from typing import Any
 from egp_stores.gene_pool import gene_pool, default_config as gp_default_config
 from pypgtable.typing import TableConfig, TableConfigNorm
@@ -11,6 +12,11 @@ from egp_population.population import population
 from sys import exit, stderr
 from .typing import WorkerConfig, WorkerConfigNorm
 from copy import deepcopy
+from logging import Logger, NullHandler, getLogger
+
+
+_logger: Logger = getLogger(__name__)
+_logger.addHandler(NullHandler())
 
 
 # FIXME: Add a version
@@ -21,6 +27,9 @@ parser.add_argument("--population_list", "-l", "Generate a popluation definition
 parser.add_argument("--sub-workers", "-s", "The number of subworkers to spawn for evolution. Default is the number of cores - 1,", type=int, default=0)
 args: Namespace = parser.parse_args()
 
+print()
+
+_logger.info
 with open(join(dirname(__file__), "formats/config_format.json"), "r", encoding="utf8") as file_ptr:
     config_validator: base_validator = base_validator(load(file_ptr))
 

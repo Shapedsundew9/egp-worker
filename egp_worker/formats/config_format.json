@@ -1,4 +1,16 @@
 {
+    "population": {
+        "type": "dict",
+        "schema": {
+            "error_on_commit_hash_mismatch" : {
+                "type": "boolean",
+                "default": false,
+                "meta": {
+                    "description": "If a population git repo is specified do not error if the repo exists and the current commit hash does not match the one specified in the configuration. This option should be set to true in most circumstances but is useful to set to false when developing a population fitness and survivability functions."
+                }
+            }
+        }
+    },
     "biome": {
         "type": "dict",
         "schema": {
