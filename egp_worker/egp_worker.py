@@ -9,7 +9,7 @@ from sys import stderr
 from typing import Any
 
 from egp_population.population import population_table_config, configure_populations, new_population
-from egp_population.typing import PopulationConfig
+from egp_population.typing import PopulationConfigNorm
 from egp_population.population_validator import POPULATION_ENTRY_SCHEMA
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
@@ -115,8 +115,8 @@ gl_config['table'] = config['microbiome']['table']
 glib: genomic_library = genomic_library(gl_config)
 
 # Get the population configurations
-p_config_tuple: tuple[dict[int, PopulationConfig], table, table] = configure_populations(config['population'], p_table_config)
-p_configs: dict[int, PopulationConfig] = p_config_tuple[0]
+p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(config['population'], p_table_config)
+p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
 p_table: table = p_config_tuple[1]
 pm_table: table = p_config_tuple[2]
 
@@ -126,4 +126,5 @@ gpool: gene_pool = gene_pool(p_configs, glib, gp_config)
 # TODO: Pull populations from higher layers
 for p_config in p_configs.values():
     new_population(p_config, glib, gpool)
+
 
