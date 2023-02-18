@@ -1,0 +1,35 @@
+{
+    "worker": {
+        "type": "UUID",
+        "description": "The worker UUID."
+    },
+    "created": {
+        "default": "(NOW() AT TIME ZONE 'UTC')",
+        "type": "TIMESTAMP",
+        "description": "The time at which the population entry was created."
+    },
+    "populations": {
+        "type": "ARRAY[BYTEA[32]]",
+        "description": "The hash of each population the worker is configured to evolve."
+    },
+    "platform_info": {
+        "type": "BYTEA[32]",
+        "description": "The SHA256 of the platform_info describing the platform the worker is running on."
+    },
+    "sub_processes": {
+        "type": "INT4",
+        "description": "The number of sub-processes spawned each cycle. "
+    },
+    "biome_connection_str": {
+        "type": "VARCHAR",
+        "description": "The configured postgresql connection string for the biome."
+    },
+    "microbiome_connection_str": {
+        "type": "VARCHAR",
+        "description": "The configured postgresql connection string for the microbiome."
+    },
+    "gene_pool_connection_str": {
+        "type": "VARCHAR",
+        "description": "The configured postgresql connection string for the gene pool."
+    }
+}

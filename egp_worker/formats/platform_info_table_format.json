@@ -1,0 +1,40 @@
+{
+    "machine": {
+        "type": "VARCHAR",
+        "description": "The machine type, e.g. 'i386'. An empty string if the value cannot be determined."
+    },
+    "signature": {
+        "type": "BYTEA[32]",
+        "primary_key": true,
+        "description": "SHA256 identifier for this platform."
+    },        
+    "processor": {
+        "type": "VARCHAR",
+        "description": "The (real) processor name, e.g. 'amdk6'. An empty string if the value cannot be determined."
+    },
+    "platform": {
+        "type": "VARCHAR",
+        "description": "Returns a single string identifying the underlying platform with as much useful information as possible. The output is intended to be human readable rather than machine parseable. "
+    },
+    "python_version": {
+        "type": "VARCHAR",
+        "description": "The Python version as string 'major.minor.patchlevel'."
+    },
+    "system": {
+        "type": "VARCHAR",
+        "description": "The system/OS name, such as 'Linux', 'Darwin', 'Java', 'Windows'. An empty string if the value cannot be determined."
+    },
+    "release": {
+        "type": "VARCHAR",
+        "description": "The system’s release, e.g. '2.2.0' or 'NT'. An empty string if the value cannot be determined."
+    },
+    "EGPOps/s": {
+        "type": "REAL",
+        "description": "An Erasmus GP specific performance metric directly proportional to the prcoessing power of the system for typical Erasmus GP tasks in units of notional operations per second. Bigger = faster."
+    },
+    "created": {
+        "default": "(NOW() AT TIME ZONE 'UTC')",
+        "type": "TIMESTAMP",
+        "description": "The date and time of the first use of this platform."
+    }
+}

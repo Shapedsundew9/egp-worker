@@ -1,0 +1,71 @@
+{
+    "worker": {
+        "type": "uuid",
+        "required": "true",
+        "meta": {
+            "description": "The worker UUID."
+        }
+    },
+    "created": {
+        "meta": {
+            "description": "The UTC date and time of the populations definition creation."
+        },
+        "type": "datetime",
+        "readonly": true
+    },
+    "populations": {
+        "type": "list",
+        "schema": {
+            "type": "binary",
+            "maxlength": 2147483647,
+            "meta": {
+                "description": "The hash of each population the worker is configured to evolve."
+            },
+            "minlength": 1
+        }
+    },
+    "platform_info": {
+        "type": "binary",
+        "maxlength": 32,
+        "meta": {
+            "description": "The SHA256 of the platform_info describing the platform the worker is running on."
+        },
+        "minlength": 32, 
+        "required": true
+    },
+    "sub_processes": {
+        "type": "integer",
+        "min": 1,
+        "max": 2147483647,
+        "meta": {
+            "description": "The number of sub-processes spawned each cycle. "
+        }
+    },
+    "biome_connection_str": {
+        "type": "string",
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "minlength": 22,
+        "maxlength": 1024,
+        "meta": {
+            "description": "The configured postgresql connection string for the biome."
+        }
+    },
+    "microbiome_connection_str": {
+        "type": "string",
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "minlength": 22,
+        "maxlength": 1024,
+        "meta": {
+            "description": "The configured postgresql connection string for the microbiome."
+        }
+    },
+    "gene_pool_connection_str": {
+        "type": "string",
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "minlength": 22,
+        "maxlength": 1024,
+        "meta": {
+            "description": "The configured postgresql connection string for the gene pool."
+        }
+    }
+}

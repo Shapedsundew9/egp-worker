@@ -1,0 +1,79 @@
+{
+    "machine": {
+        "type": "string",
+        "maxlength": 128,
+        "required": true,
+        "meta": {
+            "description": "The machine type, e.g. 'i386'. An empty string if the value cannot be determined."
+        }
+    },
+    "signature": {
+        "meta": {
+            "description": "SHA256 for this platform."
+        },
+        "type": "binary",
+        "minlength": 32,
+        "maxlength": 32,
+        "default_setter": "set_signature"
+    },        
+    "processor": {
+        "type": "string",
+        "maxlength": 128,
+        "required": true,
+        "meta": {
+            "description": "The (real) processor name, e.g. 'amdk6'. An empty string if the value cannot be determined."
+        }
+    },
+    "platform": {
+        "type": "string",
+        "maxlength": 1024,
+        "required": true,
+        "meta": {
+            "description": "Returns a single string identifying the underlying platform with as much useful information as possible. The output is intended to be human readable rather than machine parseable. "
+        }
+    },
+    "python_version": {
+        "type": "string",
+        "maxlength": 64,
+        "required": true,
+        "meta": {
+            "description": "The Python version as string 'major.minor.patchlevel'."
+        }
+    },
+    "system": {
+        "type": "string",
+        "maxlength": 64,
+        "required": true,
+        "meta": {
+            "description": "The system/OS name, such as 'Linux', 'Darwin', 'Java', 'Windows'. An empty string if the value cannot be determined."
+        }
+    },
+    "release": {
+        "type": "string",
+        "maxlength": 64,
+        "required": true,
+        "meta": {
+            "description": "The system’s release, e.g. '2.2.0' or 'NT'. An empty string if the value cannot be determined."
+        }
+    },
+    "EGPOps/s": {
+        "type": "float",
+        "min": 0.0,
+        "default": 0.0,
+        "required": true,
+        "meta": {
+            "description": "An Erasmus GP specific performance metric directly proportional to the prcoessing power of the system for typical Erasmus GP tasks in units of notional operations per second. Bigger = faster."
+        }
+    },
+    "created": {
+        "meta": {
+            "description": "The date and time of the first use of this platform."
+        },
+        "type": "string",
+        "minlength": 27,
+        "maxlength": 27,
+        "regex": "20[2-9][0-9]-(1[0-2]|0[1-9])-([0-2][0-9]|3[01])T[0-2][0-9](:[0-5][0-9]){2}\\.[0-9]{6}Z",
+        "check_with": "valid_created",
+        "default_setter": "set_created"
+    }
+}
