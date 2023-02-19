@@ -19,7 +19,7 @@ from egp_stores.typing import GenePoolConfigNorm
 from egp_utils.base_validator import base_validator
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
-from pypgtable.typing import TableConfigNorm
+from pypgtable.typing import TableConfigNorm, TableSchema, TableConfig
 from pypgtable.validators import PYPGTABLE_DB_CONFIG_SCHEMA
 
 from .typing import WorkerConfigNorm
@@ -114,6 +114,8 @@ gl_config['database'] = config['databases'][config['microbiome']['database']]
 gl_config['table'] = config['microbiome']['table']
 glib: genomic_library = genomic_library(gl_config)
 
+# TODO: Ping the biome - only warn if inaccessible
+
 # Get the population configurations
 p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(config['population'], p_table_config)
 p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
@@ -127,4 +129,13 @@ gpool: gene_pool = gene_pool(p_configs, glib, gp_config)
 for p_config in p_configs.values():
     new_population(p_config, glib, gpool)
 
+# Register the worker.
+# The worker information is persisted in the gene pool database
+_logger.info('Configuration validated. All critical connections & populations established.')
+w_table_config: TableConfigNorm = deepcopy(p_table_config)
+w_table_config['table'] = gp_config['gene_pool']['table'] + '_workers'
+w_table_config['database'] = gp_config['gene_pool']['database']
+w_table_config['create_db'] = False
+with open(join(dirname(__file__), "formats/worker_table_format.json"), "r", encoding="utf8") as file_ptr:
+    w_table_config['schema']: TableSchema = load(file_ptr)
 
