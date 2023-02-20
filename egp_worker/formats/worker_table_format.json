@@ -1,7 +1,8 @@
 {
     "worker": {
         "type": "UUID",
-        "description": "The worker UUID."
+        "description": "The worker UUID.",
+        "primary_key": true
     },
     "created": {
         "default": "(NOW() AT TIME ZONE 'UTC')",

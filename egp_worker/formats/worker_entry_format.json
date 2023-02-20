@@ -24,7 +24,7 @@
             "minlength": 1
         }
     },
-    "platform_info": {
+    "platform_info_hash": {
         "type": "binary",
         "maxlength": 32,
         "meta": {
@@ -33,7 +33,7 @@
         "minlength": 32, 
         "required": true
     },
-    "sub_processes": {
+    "sub_workers": {
         "type": "integer",
         "min": 1,
         "max": 2147483647,

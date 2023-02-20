@@ -1,16 +1,20 @@
+#! /usr/bin/python
 """Worker module for Erasmus GP."""
 from argparse import ArgumentParser, Namespace, _MutuallyExclusiveGroup
 from copy import deepcopy
 from json import dump, load
 from logging import Logger, NullHandler, getLogger
+from os import cpu_count
 from os.path import dirname, join
 from sys import exit as sys_exit
 from sys import stderr
 from typing import Any
+from uuid import uuid4
 
-from egp_population.population import population_table_config, configure_populations, new_population
-from egp_population.typing import PopulationConfigNorm
+from egp_population.population import (configure_populations, new_population,
+                                       population_table_config)
 from egp_population.population_validator import POPULATION_ENTRY_SCHEMA
+from egp_population.typing import PopulationConfigNorm
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
 from egp_stores.genomic_library import default_config as gl_default_config
@@ -19,10 +23,12 @@ from egp_stores.typing import GenePoolConfigNorm
 from egp_utils.base_validator import base_validator
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
-from pypgtable.typing import TableConfigNorm, TableSchema, TableConfig
-from pypgtable.validators import PYPGTABLE_DB_CONFIG_SCHEMA
+from pypgtable.common import connection_str_from_config
+from pypgtable.typing import TableConfigNorm
+from pypgtable.validators import PYPGTABLE_DB_CONFIG_SCHEMA, table_config_validator
 
-from .typing import WorkerConfigNorm
+from .platform_info import get_platform_info
+from .egp_typing import WorkerConfigNorm
 
 _logger: Logger = getLogger(__name__)
 _logger.addHandler(NullHandler())
@@ -39,7 +45,7 @@ meg.add_argument(
 meg.add_argument("--population_list", "-l", "Update the configuration file with the popluation definitions from the Gene Pool.",
                  action="store_true")
 parser.add_argument(
-    "--sub-workers",
+    "--sub_workers",
     "-s",
     "The number of subworkers to spawn for evolution. Default is the number of cores - 1,",
     type=int,
@@ -115,6 +121,8 @@ gl_config['table'] = config['microbiome']['table']
 glib: genomic_library = genomic_library(gl_config)
 
 # TODO: Ping the biome - only warn if inaccessible
+b_config: TableConfigNorm = gl_default_config()
+b_config['database'] = config['databases'][config['biome']['database']]
 
 # Get the population configurations
 p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(config['population'], p_table_config)
@@ -129,6 +137,15 @@ gpool: gene_pool = gene_pool(p_configs, glib, gp_config)
 for p_config in p_configs.values():
     new_population(p_config, glib, gpool)
 
+# Get the platform information
+pi_table_config: TableConfigNorm = deepcopy(p_table_config)
+pi_table_config['table'] = gp_config['gene_pool']['table'] + '_platform_info'
+pi_table_config['database'] = gp_config['gene_pool']['database']
+pi_table_config['create_db'] = False
+with open(join(dirname(__file__), "formats/platform_info_table_format.json"), "r", encoding="utf8") as file_ptr:
+    pi_table_config['schema'] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
+pi_data: dict[str, Any] = get_platform_info(pi_table_config)
+
 # Register the worker.
 # The worker information is persisted in the gene pool database
 _logger.info('Configuration validated. All critical connections & populations established.')
@@ -137,5 +154,17 @@ w_table_config['table'] = gp_config['gene_pool']['table'] + '_workers'
 w_table_config['database'] = gp_config['gene_pool']['database']
 w_table_config['create_db'] = False
 with open(join(dirname(__file__), "formats/worker_table_format.json"), "r", encoding="utf8") as file_ptr:
-    w_table_config['schema']: TableSchema = load(file_ptr)
-
+    w_table_config['schema'] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
+w_table: table = table(w_table_config)
+num_cores: int | None = cpu_count()
+sub_workers: int = 1 if num_cores is None or num_cores == 1 else num_cores - 1
+w_data: dict[str, Any] = {
+    'worker': uuid4(),
+    'populations': [p['population_hash'] for p in p_configs.values()],
+    'platform_info_hash': pi_data['signature'],
+    'sub_workers': sub_workers if not args.sub_workers else args.sub_workers,
+    'biome_connection_str': connection_str_from_config(b_config['database']),
+    'microbiome_connection_str': connection_str_from_config(gl_config['database']),
+    'gene_pool_connection_str': connection_str_from_config(gp_config['gene_pool']['database'])
+}
+w_table.insert([w_data])
