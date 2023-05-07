@@ -19,7 +19,7 @@ from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
 from egp_stores.genomic_library import default_config as gl_default_config
 from egp_stores.genomic_library import genomic_library
-from egp_stores.typing import GenePoolConfigNorm
+from egp_stores.egp_typing import GenePoolConfigNorm
 from egp_utils.base_validator import base_validator
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
