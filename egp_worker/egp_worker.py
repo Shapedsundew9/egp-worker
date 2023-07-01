@@ -14,7 +14,7 @@ from uuid import uuid4
 from egp_population.population import (configure_populations, new_population,
                                        population_table_config)
 from egp_population.population_validator import POPULATION_ENTRY_SCHEMA
-from egp_population.typing import PopulationConfigNorm
+from egp_population.egp_typing import PopulationConfigNorm
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
 from egp_stores.genomic_library import default_config as gl_default_config
