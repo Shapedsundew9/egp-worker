@@ -11,7 +11,7 @@ from sys import stderr
 from typing import Any
 from uuid import uuid4
 
-from egp_population.population import (configure_populations, new_population,
+from egp_population.population_config import (configure_populations, new_population,
                                        population_table_config)
 from egp_population.population_validator import POPULATION_ENTRY_SCHEMA
 from egp_population.egp_typing import PopulationConfigNorm
