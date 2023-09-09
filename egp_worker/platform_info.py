@@ -7,7 +7,7 @@ from sys import exit as sys_exit
 from typing import Any
 
 from pypgtable.table import table
-from pypgtable.typing import TableConfigNorm
+from pypgtable.pypgtable_typing import TableConfigNorm
 
 from .platform_info_validator import platform_info_validator
 

@@ -1,7 +1,7 @@
 """EGP worker type definitions."""
 from typing import TypedDict, NotRequired
-from pypgtable.typing import DatabaseConfig, DatabaseConfigNorm
-from egp_population.typing import PopulationsConfig
+from pypgtable.pypgtable_typing import DatabaseConfig, DatabaseConfigNorm
+from egp_population.egp_typing import PopulationsConfig
 
 
 class StoreConfig(TypedDict):

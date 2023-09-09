@@ -8,7 +8,7 @@ from os import cpu_count
 from os.path import dirname, join
 from sys import exit as sys_exit
 from sys import stderr
-from typing import Any
+from typing import Any, cast, Iterator
 from uuid import uuid4
 
 from egp_population.population_config import (configure_populations, new_population,
@@ -24,7 +24,7 @@ from egp_utils.base_validator import base_validator
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
 from pypgtable.common import connection_str_from_config
-from pypgtable.typing import TableConfigNorm
+from pypgtable.pypgtable_typing import TableConfigNorm
 from pypgtable.validators import PYPGTABLE_DB_CONFIG_SCHEMA, table_config_validator
 
 from .platform_info import get_platform_info
@@ -90,12 +90,9 @@ if config is None:
 # Define gene pool configuration
 gp_config: GenePoolConfigNorm = gp_default_config()
 base_name: str = config['gene_pool']['table']
-for key, table_config in gp_config.items():
-    if isinstance(table_config, TableConfigNorm):
-        table_config['table'] = config['gene_pool']['table'] if key == 'gene_pool' else config['gene_pool']['table'] + '_' + key
-        table_config['database'] = config['databases'][config['gene_pool']['database']]  # type: ignore
-    else:
-        raise AssertionError(f'table_config is a {type(table_config)}. This should not be possible!')
+for key, table_config in cast(Iterator[tuple[str, TableConfigNorm]], gp_config.items()):
+    table_config['table'] = config['gene_pool']['table'] if key == 'gene_pool' else config['gene_pool']['table'] + '_' + key
+    table_config['database'] = config['databases'][config['gene_pool']['database']]
 
 # Define population configuration
 # The population configuration is persisted in the gene pool database
@@ -121,6 +118,7 @@ gl_config['table'] = config['microbiome']['table']
 glib: genomic_library = genomic_library(gl_config)
 
 # TODO: Ping the biome - only warn if inaccessible
+# FIXME: This probably should be in the genomic libary class
 b_config: TableConfigNorm = gl_default_config()
 b_config['database'] = config['databases'][config['biome']['database']]
 
@@ -135,7 +133,7 @@ gpool: gene_pool = gene_pool(p_configs, glib, gp_config)
 
 # TODO: Pull populations from higher layers
 for p_config in p_configs.values():
-    new_population(p_config, glib, gpool)
+    new_population(p_config, gpool)
 
 # Get the platform information
 pi_table_config: TableConfigNorm = deepcopy(p_table_config)
