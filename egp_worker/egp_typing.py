@@ -6,18 +6,21 @@ from egp_population.egp_typing import PopulationsConfig
 
 class StoreConfig(TypedDict):
     """Type definition."""
+
     table: NotRequired[str]
     database: NotRequired[str]
 
 
 class StoreConfigNorm(TypedDict):
     """Type definition."""
+
     table: str
     database: str
 
 
 class WorkerConfig(TypedDict):
     """Type definition."""
+
     population: NotRequired[PopulationsConfig]
     biome: NotRequired[StoreConfig]
     microbiome: NotRequired[StoreConfig]
@@ -27,6 +30,7 @@ class WorkerConfig(TypedDict):
 
 class WorkerConfigNorm(TypedDict):
     """Type definition."""
+
     population: PopulationsConfig
     biome: StoreConfigNorm
     microbiome: StoreConfigNorm

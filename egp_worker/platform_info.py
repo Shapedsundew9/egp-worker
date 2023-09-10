@@ -1,7 +1,6 @@
 """ platform_info module."""
 from logging import Logger, NullHandler, getLogger
-from platform import (machine, platform, processor, python_version, release,
-                      system)
+from platform import machine, platform, processor, python_version, release, system
 from pprint import pformat
 from sys import exit as sys_exit
 from typing import Any
@@ -28,7 +27,7 @@ def _get_platform_info() -> dict[str, Any]:
         "python_version": python_version(),
         "system": system(),
         "release": release(),
-        "EGPOps/s": performance
+        "EGPOps/s": performance,
     }
 
 
@@ -38,11 +37,13 @@ def get_platform_info(table_config: TableConfigNorm) -> dict[str, Any]:
     platform_info: dict[str, Any] = _get_platform_info()
     platform_info: dict[str, Any] = platform_info_validator.normalized(platform_info)
     if not platform_info_validator.validate(platform_info):
-        _logger.error(f"Platform information validation failed:\n{platform_info_validator.error_str()}")
+        _logger.error(
+            f"Platform information validation failed:\n{platform_info_validator.error_str()}"
+        )
         sys_exit(1)
     pi_table: table = table(table_config)
     _logger.info("Platform information: %s", str(platform_info))
-    if platform_info['signature'] not in pi_table:
+    if platform_info["signature"] not in pi_table:
         _logger.info("New platform registered.")
         pi_table.insert([platform_info])
     else:
