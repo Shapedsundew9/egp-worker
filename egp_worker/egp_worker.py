@@ -1,4 +1,3 @@
-#! /usr/bin/python
 """Worker module for Erasmus GP."""
 from argparse import ArgumentParser, Namespace, _MutuallyExclusiveGroup
 from copy import deepcopy
