@@ -73,14 +73,10 @@ for line in header_lines(attr="bw"):
     _logger.info(line)
 
 # Load the config file validator
-with open(
-    join(dirname(__file__), "formats/config_format.json"), "r", encoding="utf8"
-) as file_ptr:
+with open(join(dirname(__file__), "formats/config_format.json"), "r", encoding="utf8") as file_ptr:
     CONFIG_SCHEMA: dict[str, Any] = load(file_ptr)
 CONFIG_SCHEMA["populations"]["configs"] = deepcopy(POPULATION_ENTRY_SCHEMA)
-CONFIG_SCHEMA["databases"]["valuesrules"]["schema"] = deepcopy(
-    PYPGTABLE_DB_CONFIG_SCHEMA
-)
+CONFIG_SCHEMA["databases"]["valuesrules"]["schema"] = deepcopy(PYPGTABLE_DB_CONFIG_SCHEMA)
 config_validator: base_validator = base_validator(CONFIG_SCHEMA)
 
 # Dump the default configuration
@@ -90,7 +86,7 @@ if args.default_config:
         with open("config.json", "w", encoding="utf8") as file_ptr:
             dump(default_config, file_ptr, indent=4, sort_keys=True)
         print("Default configuration written to ./config.json")
-        exit(0)
+        sys_exit(0)
 
 # Display the text logo art
 if args.gallery:
@@ -109,11 +105,7 @@ if config is None:
 gp_config: GenePoolConfigNorm = gp_default_config()
 base_name: str = config["gene_pool"]["table"]
 for key, table_config in cast(Iterator[tuple[str, TableConfigNorm]], gp_config.items()):
-    table_config["table"] = (
-        config["gene_pool"]["table"]
-        if key == "gene_pool"
-        else config["gene_pool"]["table"] + "_" + key
-    )
+    table_config["table"] = config["gene_pool"]["table"] if key == "gene_pool" else config["gene_pool"]["table"] + "_" + key
     table_config["database"] = config["databases"][config["gene_pool"]["database"]]
 
 # Define population configuration
@@ -130,9 +122,7 @@ if args.population_list:
     config["population"]["configs"] = list(p_table.select())
     with open("config.json", "w", encoding="utf8") as file_ptr:
         dump(config, file_ptr, indent=4, sort_keys=True)
-    print(
-        "Configuration updated with Gene Pool population configurations written to ./config.json"
-    )
+    print("Configuration updated with Gene Pool population configurations written to ./config.json")
     sys_exit(0)
 
 # Define genomic library configuration & instanciate
@@ -147,9 +137,7 @@ b_config: TableConfigNorm = gl_default_config()
 b_config["database"] = config["databases"][config["biome"]["database"]]
 
 # Get the population configurations
-p_config_tuple: tuple[
-    dict[int, PopulationConfigNorm], table, table
-] = configure_populations(config["population"], p_table_config)
+p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(config["population"], p_table_config)
 p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
 p_table: table = p_config_tuple[1]
 pm_table: table = p_config_tuple[2]
@@ -171,26 +159,18 @@ with open(
     "r",
     encoding="utf8",
 ) as file_ptr:
-    pi_table_config["schema"] = {
-        k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()
-    }
+    pi_table_config["schema"] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
 pi_data: dict[str, Any] = get_platform_info(pi_table_config)
 
 # Register the worker.
 # The worker information is persisted in the gene pool database
-_logger.info(
-    "Configuration validated. All critical connections & populations established."
-)
+_logger.info("Configuration validated. All critical connections & populations established.")
 w_table_config: TableConfigNorm = deepcopy(p_table_config)
 w_table_config["table"] = gp_config["gene_pool"]["table"] + "_workers"
 w_table_config["database"] = gp_config["gene_pool"]["database"]
 w_table_config["create_db"] = False
-with open(
-    join(dirname(__file__), "formats/worker_table_format.json"), "r", encoding="utf8"
-) as file_ptr:
-    w_table_config["schema"] = {
-        k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()
-    }
+with open(join(dirname(__file__), "formats/worker_table_format.json"), "r", encoding="utf8") as file_ptr:
+    w_table_config["schema"] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
 w_table: table = table(w_table_config)
 num_cores: int | None = cpu_count()
 sub_workers: int = 1 if num_cores is None or num_cores == 1 else num_cores - 1
@@ -201,8 +181,6 @@ w_data: dict[str, Any] = {
     "sub_workers": sub_workers if not args.sub_workers else args.sub_workers,
     "biome_connection_str": connection_str_from_config(b_config["database"]),
     "microbiome_connection_str": connection_str_from_config(gl_config["database"]),
-    "gene_pool_connection_str": connection_str_from_config(
-        gp_config["gene_pool"]["database"]
-    ),
+    "gene_pool_connection_str": connection_str_from_config(gp_config["gene_pool"]["database"]),
 }
 w_table.insert([w_data])

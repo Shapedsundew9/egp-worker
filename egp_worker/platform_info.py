@@ -37,9 +37,7 @@ def get_platform_info(table_config: TableConfigNorm) -> dict[str, Any]:
     platform_info: dict[str, Any] = _get_platform_info()
     platform_info: dict[str, Any] = platform_info_validator.normalized(platform_info)
     if not platform_info_validator.validate(platform_info):
-        _logger.error(
-            f"Platform information validation failed:\n{platform_info_validator.error_str()}"
-        )
+        _logger.error(f"Platform information validation failed:\n{platform_info_validator.error_str()}")
         sys_exit(1)
     pi_table: table = table(table_config)
     _logger.info("Platform information: %s", str(platform_info))
