@@ -21,7 +21,9 @@ class StoreConfigNorm(TypedDict):
 class WorkerConfig(TypedDict):
     """Type definition."""
 
-    population: NotRequired[PopulationsConfig]
+    problem_definitions: NotRequired[str]
+    problem_folder: NotRequired[str]
+    population: NotRequired[PopulationsConfig]    
     biome: NotRequired[StoreConfig]
     microbiome: NotRequired[StoreConfig]
     gene_pool: NotRequired[StoreConfig]
@@ -31,6 +33,8 @@ class WorkerConfig(TypedDict):
 class WorkerConfigNorm(TypedDict):
     """Type definition."""
 
+    problem_definitions: str
+    problem_folder: str
     population: PopulationsConfig
     biome: StoreConfigNorm
     microbiome: StoreConfigNorm

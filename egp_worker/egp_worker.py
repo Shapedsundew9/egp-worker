@@ -3,34 +3,30 @@ from argparse import ArgumentParser, Namespace, _MutuallyExclusiveGroup
 from copy import deepcopy
 from json import dump, load
 from logging import Logger, NullHandler, getLogger
-from os import cpu_count
-from os.path import dirname, join
+from os import cpu_count, access, W_OK
+from os.path import dirname, join, exists
 from sys import exit as sys_exit
-from sys import stderr
 from typing import Any, cast, Iterator
 from uuid import uuid4
 
-from egp_population.population_config import (
-    configure_populations,
-    new_population,
-    population_table_config,
-)
-from egp_population.population_validator import POPULATION_ENTRY_SCHEMA
+
+from egp_population.population_config import configure_populations, new_population, population_table_default_config
 from egp_population.egp_typing import PopulationConfigNorm
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
 from egp_stores.genomic_library import default_config as gl_default_config
 from egp_stores.genomic_library import genomic_library
 from egp_stores.egp_typing import GenePoolConfigNorm
-from egp_utils.base_validator import base_validator
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
 from pypgtable.common import connection_str_from_config
 from pypgtable.pypgtable_typing import TableConfigNorm
-from pypgtable.validators import PYPGTABLE_DB_CONFIG_SCHEMA, table_config_validator
+from pypgtable.validators import table_config_validator
 
 from .platform_info import get_platform_info
 from .egp_typing import WorkerConfigNorm
+from .config_validator import load_config, dump_config
+
 
 _logger: Logger = getLogger(__name__)
 _logger.addHandler(NullHandler())
@@ -71,21 +67,10 @@ print(header())
 for line in header_lines(attr="bw"):
     _logger.info(line)
 
-# Load the config file validator
-with open(join(dirname(__file__), "formats/config_format.json"), "r", encoding="utf8") as file_ptr:
-    CONFIG_SCHEMA: dict[str, Any] = load(file_ptr)
-CONFIG_SCHEMA["populations"]["configs"] = deepcopy(POPULATION_ENTRY_SCHEMA)
-CONFIG_SCHEMA["databases"]["valuesrules"]["schema"] = deepcopy(PYPGTABLE_DB_CONFIG_SCHEMA)
-config_validator: base_validator = base_validator(CONFIG_SCHEMA)
-
 # Dump the default configuration
 if args.default_config:
-    if args.default_config:
-        default_config: WorkerConfigNorm = config_validator.normalized({})
-        with open("config.json", "w", encoding="utf8") as file_ptr:
-            dump(default_config, file_ptr, indent=4, sort_keys=True)
-        print("Default configuration written to ./config.json")
-        sys_exit(0)
+    dump_config()
+    sys_exit(0)
 
 # Display the text logo art
 if args.gallery:
@@ -93,12 +78,7 @@ if args.gallery:
     sys_exit(0)
 
 # Load & validate worker configuration
-config_file: str = args.config_file if args.config_file is not None else "config.json"
-with open(config_file, "r", encoding="utf8") as file_ptr:
-    config: WorkerConfigNorm | None = config_validator.normalized(load(file_ptr))
-if config is None:
-    print(f"{config_file} is invalid:\n{config_validator.error_str()}\n", file=stderr)
-    sys_exit(1)
+config: WorkerConfigNorm = load_config(args.config_file)
 
 # Define gene pool configuration
 gp_config: GenePoolConfigNorm = gp_default_config()
@@ -109,7 +89,7 @@ for key, table_config in cast(Iterator[tuple[str, TableConfigNorm]], gp_config.i
 
 # Define population configuration
 # The population configuration is persisted in the gene pool database
-p_table_config: TableConfigNorm = population_table_config()
+p_table_config: TableConfigNorm = population_table_default_config()
 p_table_config["table"] = gp_config["gene_pool"]["table"] + "_populations"
 p_table_config["database"] = gp_config["gene_pool"]["database"]
 
@@ -124,6 +104,20 @@ if args.population_list:
     print("Configuration updated with Gene Pool population configurations written to ./config.json")
     sys_exit(0)
 
+# Check the problem data folder
+directory_path: str = config["problem_folder"]
+if exists(directory_path):
+    if not access(directory_path, W_OK):
+        print(f"The 'problem_folder' directory '{directory_path}' exists but is not writable.")
+        sys_exit(1)
+
+# Get the population configurations
+p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(
+    config["population"], p_table_config)
+p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
+p_table: table = p_config_tuple[1]
+pm_table: table = p_config_tuple[2]
+
 # Define genomic library configuration & instanciate
 gl_config: TableConfigNorm = gl_default_config()
 gl_config["database"] = config["databases"][config["microbiome"]["database"]]
@@ -134,12 +128,6 @@ glib: genomic_library = genomic_library(gl_config)
 # FIXME: This probably should be in the genomic libary class
 b_config: TableConfigNorm = gl_default_config()
 b_config["database"] = config["databases"][config["biome"]["database"]]
-
-# Get the population configurations
-p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(config["population"], p_table_config)
-p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
-p_table: table = p_config_tuple[1]
-pm_table: table = p_config_tuple[2]
 
 # Establish the Gene Pool
 gpool: gene_pool = gene_pool(p_configs, glib, gp_config)

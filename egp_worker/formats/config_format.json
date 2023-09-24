@@ -1,4 +1,25 @@
 {
+    "problem_definitions": {
+        "type": "string",
+        "regex": "^((http|https)://)[-a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)$",
+        "minlength": 8,
+        "meta": {
+            "description": "The URL of the problem definitions file."
+        },
+        "maxlength": 2048,
+        "required": true,
+        "default": "https://github.com/Shapedsundew9/egp-problems/blob/main/egp_problems.json"
+    },
+    "problem_folder": {
+        "type": "string",
+        "default": "/tmp/egp",
+        "minlength": 1,
+        "maxlength": 256,
+        "regex": "[ -~]{0,1024}",
+        "meta": {
+            "description": "The folder where problem definitions, data & code is stored."
+        }
+    },
     "populations": {
         "type": "dict",
         "schema": {
