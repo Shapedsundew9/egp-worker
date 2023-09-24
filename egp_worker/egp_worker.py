@@ -3,12 +3,13 @@ from argparse import ArgumentParser, Namespace, _MutuallyExclusiveGroup
 from copy import deepcopy
 from json import dump, load
 from logging import Logger, NullHandler, getLogger
-from os import cpu_count, access, W_OK
+from os import cpu_count, access, W_OK, chdir, getcwd
 from os.path import dirname, join, exists
 from sys import exit as sys_exit
 from typing import Any, cast, Iterator
 from uuid import uuid4
-
+from requests import get, Response
+from pathlib import Path
 
 from egp_population.population_config import configure_populations, new_population, population_table_default_config
 from egp_population.egp_typing import PopulationConfigNorm
@@ -110,10 +111,40 @@ if exists(directory_path):
     if not access(directory_path, W_OK):
         print(f"The 'problem_folder' directory '{directory_path}' exists but is not writable.")
         sys_exit(1)
+else:
+    # Create the directory if it does not exist
+    try:
+        Path(directory_path).mkdir(parents=True, exist_ok=True)
+    except PermissionError as e:
+        print(f"The 'problem_folder' directory '{directory_path}' does not exist and cannot be created: {e}")
+        sys_exit(1)
+
+# Store the current working directory & change to where Erasmus GP keeps its data
+cwd: str = getcwd()
+chdir(directory_path)
+
+# Check the verified problem definitions file
+problem_definitions: list[dict[str, Any]] = []
+problem_definitions_file: str = join(directory_path, 'egp_problems.json')
+problem_definitions_file_exists: bool = exists(problem_definitions_file)
+if not problem_definitions_file_exists:
+    _logger.info(f"The egp_problems.json does not exist in {directory_path}'. Pulling from {config['problem_definitions']}")
+    response: Response = get(config['problem_definitions'], timeout=30)
+    if (problem_definitions_file_exists := response.status_code == 200):
+        with open(problem_definitions_file, "wb") as file:
+            file.write(response.content)
+        _logger.info("File 'egp_problems.json' downloaded successfully.")
+    else:
+        _logger.warning(f"Failed to download the file. Status code: {response.status_code}.")
+
+# Load the problems definitions file if it exists
+if problem_definitions_file_exists:
+    with open(problem_definitions_file, "r", encoding="utf8") as file_ptr:
+        problem_definitions = load(file_ptr)
 
 # Get the population configurations
 p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(
-    config["population"], p_table_config)
+    config["population"], problem_definitions, p_table_config)
 p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
 p_table: table = p_config_tuple[1]
 pm_table: table = p_config_tuple[2]
@@ -171,3 +202,7 @@ w_data: dict[str, Any] = {
     "gene_pool_connection_str": connection_str_from_config(gp_config["gene_pool"]["database"]),
 }
 w_table.insert([w_data])
+
+
+# Return whence we came
+chdir(cwd)

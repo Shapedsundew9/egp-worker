@@ -8,7 +8,7 @@
         },
         "maxlength": 2048,
         "required": true,
-        "default": "https://github.com/Shapedsundew9/egp-problems/blob/main/egp_problems.json"
+        "default": "https://raw.githubusercontent.com/Shapedsundew9/egp-problems/main/egp_problems.json"
     },
     "problem_folder": {
         "type": "string",
