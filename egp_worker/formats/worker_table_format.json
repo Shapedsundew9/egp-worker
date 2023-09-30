@@ -1,5 +1,5 @@
 {
-    "worker": {
+    "worker_id": {
         "type": "UUID",
         "description": "The worker UUID.",
         "primary_key": true
@@ -10,7 +10,7 @@
         "description": "The time at which the population entry was created."
     },
     "populations": {
-        "type": "ARRAY[BYTEA[32]]",
+        "type": "ARRAY[INT4]",
         "description": "The hash of each population the worker is configured to evolve."
     },
     "platform_info": {

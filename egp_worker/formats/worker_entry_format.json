@@ -1,5 +1,5 @@
 {
-    "worker": {
+    "worker_id": {
         "type": "uuid",
         "required": "true",
         "meta": {
@@ -16,10 +16,10 @@
     "populations": {
         "type": "list",
         "schema": {
-            "type": "binary",
+            "type": "integer",
             "maxlength": 2147483647,
             "meta": {
-                "description": "The hash of each population the worker is configured to evolve."
+                "description": "The UID of each population the worker is configured to evolve."
             },
             "minlength": 1
         }

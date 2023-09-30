@@ -2,6 +2,7 @@
 from typing import TypedDict, NotRequired
 from pypgtable.pypgtable_typing import DatabaseConfig, DatabaseConfigNorm
 from egp_population.egp_typing import PopulationsConfig
+from uuid import UUID
 
 
 class StoreConfig(TypedDict):
@@ -21,9 +22,10 @@ class StoreConfigNorm(TypedDict):
 class WorkerConfig(TypedDict):
     """Type definition."""
 
+    worker_id: NotRequired[UUID]
     problem_definitions: NotRequired[str]
     problem_folder: NotRequired[str]
-    population: NotRequired[PopulationsConfig]    
+    population: NotRequired[PopulationsConfig]
     biome: NotRequired[StoreConfig]
     microbiome: NotRequired[StoreConfig]
     gene_pool: NotRequired[StoreConfig]
@@ -33,6 +35,7 @@ class WorkerConfig(TypedDict):
 class WorkerConfigNorm(TypedDict):
     """Type definition."""
 
+    worker_id: UUID
     problem_definitions: str
     problem_folder: str
     population: PopulationsConfig

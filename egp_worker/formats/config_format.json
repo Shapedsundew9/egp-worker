@@ -23,17 +23,21 @@
     "populations": {
         "type": "dict",
         "schema": {
-            "error_on_commit_hash_mismatch" : {
-                "type": "boolean",
-                "default": false,
+            "worker_id": {
+                "type": "string",
+                "minlength": 36,
+                "maxlength": 36,
+                "regex": "[a-zA-Z0-9-]{36}",
+                "readonly": true,
                 "meta": {
-                    "description": "If a population git repo is specified do not error if the repo exists and the current commit hash does not match the one specified in the configuration. This option should be set to true in most circumstances but is useful to set to false when developing a population fitness and survivability functions."
+                    "description": "The worker id is generated at run time."
                 }
             },
             "configs": {
                 "type": "list",
                 "schema": {
-
+                    "type": "dict",
+                    "schema": {}
                 }
             }
         }
@@ -53,8 +57,7 @@
                 "default": "erasmus_db",
                 "minlength": 1,
                 "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+",
-                "check_with": "valid_default_database",        
+                "regex": "[a-zA-Z0-9_-]+",      
                 "dependencies": ["databases"]      
             }
         }
@@ -103,8 +106,6 @@
         "type": "dict",
         "default": {
             "erasmus_db": {
-                "recreate": false,
-                "temp": false,
                 "host": "localhost",
                 "user": "erasmus",
                 "password": "erasmus",
