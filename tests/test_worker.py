@@ -1,8 +1,19 @@
 """Test cases for the worker process script."""
-import pytest
 from os import remove
-from os.path import join, dirname, exists
+from os.path import dirname, exists, join
+
+import pytest
+
 from egp_worker.egp_worker import launch_workers, parse_cmdline_args
+from egp_worker.config_validator import generate_config
+from pypgtable.database import db_delete
+
+
+def delete_dbs():
+    """Delete the databases."""
+    config = generate_config()
+    for db in config["databases"].values():
+        db_delete(db["dbname"], db)
 
 
 def test_init_parameterless_no_config() -> None:
@@ -39,3 +50,23 @@ def test_dump_default_config() -> None:
     assert exists("config.json")
     if exists("config.json"):
         remove("config.json")
+
+
+def test_print_gallery() -> None:
+    """Test that the worker process prints the gallery."""
+    with pytest.raises(SystemExit) as system_exit:
+        launch_workers(parse_cmdline_args(["-g"]))
+    assert system_exit.value.code == 0
+
+
+def test_meg() -> None:
+    """Test that the worker process prints the gallery."""
+    with pytest.raises(SystemExit) as system_exit:
+        launch_workers(parse_cmdline_args(["-g", "-d"]))
+    assert system_exit.value.code == 2
+
+
+def test_use_default_config() -> None:
+    """Test that the worker process prints the gallery."""
+    delete_dbs()
+    launch_workers(parse_cmdline_args(["-D"]))

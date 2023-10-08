@@ -1,129 +1,115 @@
 {
-    "problem_definitions": {
-        "type": "string",
-        "regex": "^((http|https)://)[-a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)$",
-        "minlength": 8,
-        "meta": {
-            "description": "The URL of the problem definitions file."
-        },
-        "maxlength": 2048,
-        "required": true,
-        "default": "https://raw.githubusercontent.com/Shapedsundew9/egp-problems/main/egp_problems.json"
-    },
-    "problem_folder": {
-        "type": "string",
-        "default": "/tmp/egp",
-        "minlength": 1,
-        "maxlength": 256,
-        "regex": "[ -~]{0,1024}",
-        "meta": {
-            "description": "The folder where problem definitions, data & code is stored."
-        }
-    },
-    "populations": {
-        "type": "dict",
-        "schema": {
-            "worker_id": {
-                "type": "string",
-                "minlength": 36,
-                "maxlength": 36,
-                "regex": "[a-zA-Z0-9-]{36}",
-                "readonly": true,
-                "meta": {
-                    "description": "The worker id is generated at run time."
-                }
-            },
-            "configs": {
-                "type": "list",
-                "schema": {
-                    "type": "dict",
-                    "schema": {}
-                }
-            }
-        }
-    },
-    "biome": {
-        "type": "dict",
-        "schema": {
-            "table": {
-                "type": "string",
-                "default": "biome_genomic_library",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+"
-            },
-            "database": {
-                "type": "string",
-                "default": "erasmus_db",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+",      
-                "dependencies": ["databases"]      
-            }
-        }
-    },
-    "microbiome": {
-        "type": "dict",
-        "schema": {
-            "table": {
-                "type": "string",
-                "default": "microbiome_genomic_library",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+"
-            },
-            "database": {
-                "type": "string",
-                "default": "erasmus_db",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+",
-                "dependencies": ["databases"]      
-            }
-        }
-    },
-    "gene_pool": {
-        "type": "dict",
-        "schema": {
-            "table": {
-                "type": "string",
-                "default": "gene_pool",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+"
-            },
-            "database": {
-                "type": "string",
-                "default": "erasmus_db",
-                "minlength": 1,
-                "maxlength": 64,
-                "regex": "[a-zA-Z0-9_-]+",
-                "dependencies": ["databases"]      
-            }
-        }
-    },
     "databases": {
-        "type": "dict",
         "default": {
             "erasmus_db": {
+                "dbname": "erasmus_db",
                 "host": "localhost",
-                "user": "erasmus",
-                "password": "erasmus",
+                "maintenance_db": "postgres",
+                "password": "postgres",
                 "port": 5432,
-                "maintenance_db": "postgres"
+                "user": "postgres"
             }
         },
         "keysrules": {
-            "type": "string",
-            "minlength": 1,
             "maxlength": 64,
-            "regex": "[a-zA-Z-_0-9]*"
+            "minlength": 1,
+            "regex": "[a-zA-Z-_0-9]*",
+            "type": "string"
         },
+        "type": "dict",
         "valuesrules": {
-            "type": "dict",
-            "schema": {
-
-            }
+            "schema": {},
+            "type": "dict"
         }
+    },
+    "gene_pool": {
+        "default": {},
+        "schema": {
+            "database": {
+                "default": "erasmus_db",
+                "dependencies": [
+                    "databases"
+                ],
+                "maxlength": 64,
+                "minlength": 1,
+                "regex": "[a-zA-Z0-9_-]+",
+                "type": "string"
+            },
+            "table": {
+                "default": "gene_pool",
+                "maxlength": 64,
+                "minlength": 1,
+                "regex": "[a-zA-Z0-9_-]+",
+                "type": "string"
+            }
+        },
+        "type": "dict"
+    },
+    "microbiome": {
+        "default": {},
+        "schema": {
+            "database": {
+                "default": "erasmus_db",
+                "dependencies": [
+                    "databases"
+                ],
+                "maxlength": 64,
+                "minlength": 1,
+                "regex": "[a-zA-Z0-9_-]+",
+                "type": "string"
+            },
+            "table": {
+                "default": "microbiome_genomic_library",
+                "maxlength": 64,
+                "minlength": 1,
+                "regex": "[a-zA-Z0-9_-]+",
+                "type": "string"
+            }
+        },
+        "type": "dict"
+    },
+    "populations": {
+        "default": {},
+        "schema": {
+            "configs": {
+                "schema": {
+                    "schema": {},
+                    "type": "dict"
+                },
+                "type": "list"
+            },
+            "worker_id": {
+                "maxlength": 36,
+                "meta": {
+                    "description": "The worker id is generated at run time."
+                },
+                "minlength": 36,
+                "readonly": true,
+                "regex": "[a-zA-Z0-9-]{36}",
+                "type": "string"
+            }
+        },
+        "type": "dict"
+    },
+    "problem_definitions": {
+        "default": "https://raw.githubusercontent.com/Shapedsundew9/egp-problems/main/egp_problems.json",
+        "maxlength": 2048,
+        "meta": {
+            "description": "The URL of the problem definitions file."
+        },
+        "minlength": 8,
+        "regex": "^((http|https)://)[-a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)$",
+        "required": true,
+        "type": "string"
+    },
+    "problem_folder": {
+        "default": "/tmp/egp",
+        "maxlength": 256,
+        "meta": {
+            "description": "The folder where problem definitions, data & code is stored."
+        },
+        "minlength": 1,
+        "regex": "[ -~]{0,1024}",
+        "type": "string"
     }
 }

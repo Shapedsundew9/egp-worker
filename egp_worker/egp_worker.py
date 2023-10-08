@@ -22,6 +22,7 @@ from egp_stores.genomic_library import default_config as gl_default_config
 from egp_stores.genomic_library import genomic_library
 from egp_utils.egp_logo import gallery, header, header_lines
 from pypgtable import table
+from pypgtable import __name__ as pypgtable_name
 from pypgtable.common import connection_str_from_config
 from pypgtable.pypgtable_typing import TableConfigNorm
 from pypgtable.validators import table_config_validator
@@ -33,6 +34,10 @@ from .platform_info import get_platform_info
 
 _logger: Logger = getLogger(__name__)
 _logger.addHandler(NullHandler())
+
+
+# Some modules are noisey loggers
+getLogger(pypgtable_name).setLevel("WARNING")
 
 
 def parse_cmdline_args(args: list[str]) -> Namespace:
@@ -60,8 +65,8 @@ def parse_cmdline_args(args: list[str]) -> Namespace:
     )
     parser.add_argument(
         "-s",
-        "--sub_workers",
-        help="The number of subworkers to spawn for evolution. Default is the number of cores - 1,",
+        "--sub_processes",
+        help="The number of subprocesses to spawn for evolution. Default is the number of cores - 1,",
         type=int,
         default=0,
     )
@@ -99,7 +104,6 @@ def launch_workers(args: Namespace) -> None:
         config: WorkerConfigNorm = load_config(args.config_file)
 
     # Define gene pool configuration
-    print(config)
     gp_config: GenePoolConfigNorm = gp_default_config()
     for key, table_config in cast(Iterator[tuple[str, TableConfigNorm]], gp_config.items()):
         table_config["table"] = config["gene_pool"]["table"] if key == "gene_pool" else config["gene_pool"]["table"] + "_" + key
@@ -116,7 +120,7 @@ def launch_workers(args: Namespace) -> None:
         p_table_config["create_db"] = False
         p_table_config["create_table"] = False
         p_table: table = table(p_table_config)
-        config["population"]["configs"] = list(p_table.select())
+        config["populations"]["configs"] = list(p_table.select())
         with open("config.json", "w", encoding="utf8") as file_ptr:
             dump(config, file_ptr, indent=4, sort_keys=True)
         print("Configuration updated with Gene Pool population configurations written to ./config.json")
@@ -162,10 +166,10 @@ def launch_workers(args: Namespace) -> None:
     # Get the population configurations & set the worker ID
     worker_id: UUID = uuid4()
     _logger.info(f"Worker ID: {worker_id}")
-    for p_config in config["population"].get("configs", []):
+    for p_config in config["populations"].get("configs", []):
         p_config["worker_id"] = worker_id
     p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(
-        config["population"], problem_definitions, p_table_config)
+        config["populations"], problem_definitions, p_table_config)
     p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
     p_table: table = p_config_tuple[1]
     pm_table: table = p_config_tuple[2]
@@ -175,11 +179,6 @@ def launch_workers(args: Namespace) -> None:
     gl_config["database"] = config["databases"][config["microbiome"]["database"]]
     gl_config["table"] = config["microbiome"]["table"]
     glib: genomic_library = genomic_library(gl_config)
-
-    # TODO: Ping the biome - only warn if inaccessible
-    # FIXME: This probably should be in the genomic libary class
-    b_config: TableConfigNorm = gl_default_config()
-    b_config["database"] = config["databases"][config["biome"]["database"]]
 
     # Establish the Gene Pool
     gpool: gene_pool = gene_pool(p_configs, glib, gp_config)
@@ -213,13 +212,13 @@ def launch_workers(args: Namespace) -> None:
         w_table_config["schema"] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
     w_table: table = table(w_table_config)
     num_cores: int | None = cpu_count()
-    sub_workers: int = 1 if num_cores is None or num_cores == 1 else num_cores - 1
+    sub_processes: int = 1 if num_cores is None or num_cores == 1 else num_cores - 1
     w_data: dict[str, Any] = {
         "worker_id": worker_id,
         "populations": [p["uid"] for p in p_configs.values()],
-        "platform_info_hash": pi_data["signature"],
-        "sub_workers": sub_workers if not args.sub_workers else args.sub_workers,
-        "biome_connection_str": connection_str_from_config(b_config["database"]),
+        "platform_info_signature": pi_data["signature"],
+        "sub_processes": sub_processes if not args.sub_processes else args.sub_processes,
+        "biome_connection_str": None,
         "microbiome_connection_str": connection_str_from_config(gl_config["database"]),
         "gene_pool_connection_str": connection_str_from_config(gp_config["gene_pool"]["database"]),
     }

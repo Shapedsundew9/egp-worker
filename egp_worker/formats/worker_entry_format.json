@@ -1,71 +1,75 @@
 {
-    "worker_id": {
-        "type": "uuid",
-        "required": "true",
+    "biome_connection_str": {
+        "default": null,
+        "maxlength": 1024,
         "meta": {
-            "description": "The worker UUID."
-        }
+            "description": "The configured postgresql connection string for the biome."
+        },
+        "minlength": 22,
+        "nullable": true,
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "type": "string"
     },
     "created": {
         "meta": {
             "description": "The UTC date and time of the populations definition creation."
         },
-        "type": "datetime",
-        "readonly": true
+        "readonly": true,
+        "type": "datetime"
     },
-    "populations": {
-        "type": "list",
-        "schema": {
-            "type": "integer",
-            "maxlength": 2147483647,
-            "meta": {
-                "description": "The UID of each population the worker is configured to evolve."
-            },
-            "minlength": 1
-        }
+    "gene_pool_connection_str": {
+        "maxlength": 1024,
+        "meta": {
+            "description": "The configured postgresql connection string for the gene pool."
+        },
+        "minlength": 22,
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "reqired": true,
+        "type": "string"
     },
-    "platform_info_hash": {
-        "type": "binary",
+    "microbiome_connection_str": {
+        "maxlength": 1024,
+        "meta": {
+            "description": "The configured postgresql connection string for the microbiome."
+        },
+        "minlength": 22,
+        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
+        "required": true,
+        "type": "string"
+    },
+    "platform_info_signature": {
         "maxlength": 32,
         "meta": {
             "description": "The SHA256 of the platform_info describing the platform the worker is running on."
         },
-        "minlength": 32, 
-        "required": true
+        "minlength": 32,
+        "required": true,
+        "type": "binary"
+    },
+    "populations": {
+        "schema": {
+            "maxlength": 2147483647,
+            "meta": {
+                "description": "The UID of each population the worker is configured to evolve."
+            },
+            "minlength": 1,
+            "type": "integer"
+        },
+        "type": "list"
     },
     "sub_workers": {
-        "type": "integer",
-        "min": 1,
         "max": 2147483647,
         "meta": {
             "description": "The number of sub-processes spawned each cycle. "
-        }
+        },
+        "min": 1,
+        "type": "integer"
     },
-    "biome_connection_str": {
-        "type": "string",
-        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
-        "minlength": 22,
-        "maxlength": 1024,
+    "worker_id": {
         "meta": {
-            "description": "The configured postgresql connection string for the biome."
-        }
-    },
-    "microbiome_connection_str": {
-        "type": "string",
-        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
-        "minlength": 22,
-        "maxlength": 1024,
-        "meta": {
-            "description": "The configured postgresql connection string for the microbiome."
-        }
-    },
-    "gene_pool_connection_str": {
-        "type": "string",
-        "regex": "postgresql://[\\w-]*@[\\w-]*:[0-9]{4,6}/[\\w-]*",
-        "minlength": 22,
-        "maxlength": 1024,
-        "meta": {
-            "description": "The configured postgresql connection string for the gene pool."
-        }
+            "description": "The worker UUID."
+        },
+        "required": "true",
+        "type": "uuid"
     }
 }

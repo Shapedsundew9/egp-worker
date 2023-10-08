@@ -1,36 +1,37 @@
 {
-    "worker_id": {
-        "type": "UUID",
-        "description": "The worker UUID.",
-        "primary_key": true
+    "biome_connection_str": {
+        "description": "The configured postgresql connection string for the biome.",
+        "nullable": true,
+        "type": "VARCHAR"
     },
     "created": {
         "default": "(NOW() AT TIME ZONE 'UTC')",
-        "type": "TIMESTAMP",
-        "description": "The time at which the population entry was created."
-    },
-    "populations": {
-        "type": "ARRAY[INT4]",
-        "description": "The hash of each population the worker is configured to evolve."
-    },
-    "platform_info": {
-        "type": "BYTEA[32]",
-        "description": "The SHA256 of the platform_info describing the platform the worker is running on."
-    },
-    "sub_processes": {
-        "type": "INT4",
-        "description": "The number of sub-processes spawned each cycle. "
-    },
-    "biome_connection_str": {
-        "type": "VARCHAR",
-        "description": "The configured postgresql connection string for the biome."
-    },
-    "microbiome_connection_str": {
-        "type": "VARCHAR",
-        "description": "The configured postgresql connection string for the microbiome."
+        "description": "The time at which the population entry was created.",
+        "type": "TIMESTAMP"
     },
     "gene_pool_connection_str": {
-        "type": "VARCHAR",
-        "description": "The configured postgresql connection string for the gene pool."
+        "description": "The configured postgresql connection string for the gene pool.",
+        "type": "VARCHAR"
+    },
+    "microbiome_connection_str": {
+        "description": "The configured postgresql connection string for the microbiome.",
+        "type": "VARCHAR"
+    },
+    "platform_info_signature": {
+        "description": "The SHA256 of the platform_info describing the platform the worker is running on.",
+        "type": "BYTEA"
+    },
+    "populations": {
+        "description": "The hash of each population the worker is configured to evolve.",
+        "type": "INT4[]"
+    },
+    "sub_processes": {
+        "description": "The number of sub-processes spawned each cycle. ",
+        "type": "INT4"
+    },
+    "worker_id": {
+        "description": "The worker UUID.",
+        "primary_key": true,
+        "type": "UUID"
     }
 }

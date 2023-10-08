@@ -22,9 +22,8 @@ config_validator: base_validator = base_validator(CONFIG_SCHEMA)
 # Dump the default configuration
 def dump_config() -> None:
     """Save the default configuration to config.json."""
-    default_config: WorkerConfigNorm = config_validator.normalized({})
     with open("config.json", "w", encoding="utf8") as fileptr:
-        dump(default_config, fileptr, indent=4, sort_keys=True)
+        dump(generate_config(), fileptr, indent=4, sort_keys=True)
     print("Default configuration written to ./config.json")
 
 
@@ -32,6 +31,7 @@ def dump_config() -> None:
 def generate_config() -> WorkerConfigNorm:
     """Generate the default configuration."""
     return config_validator.normalized({})
+
 
 
 # Load & validate worker configuration

@@ -26,9 +26,9 @@ class _platform_info_validator(base_validator):
         if date_time_obj > datetime.utcnow():
             self._error(field, "Created date-time cannot be in the future.")
 
-    def _normalize_default_setter_set_signature(self, _) -> bytes:
-        sig_str: str = self.document["machine"] + self.document["processor"] + self.document["python_version"]
-        sig_str += self.document["system"] + self.document["release"] + str(int(self.document["EGPOps/s"]))
+    def _normalize_default_setter_set_signature(self, document) -> bytes:
+        sig_str: str = document["machine"] + document["processor"] + document["python_version"]
+        sig_str += document["system"] + document["release"] + str(int(document["EGPOps"]))
 
         # Remove spaces etc. to give some degrees of freedom in formatting and
         # not breaking the signature

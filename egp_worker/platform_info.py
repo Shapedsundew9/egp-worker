@@ -4,6 +4,7 @@ from platform import machine, platform, processor, python_version, release, syst
 from pprint import pformat
 from sys import exit as sys_exit
 from typing import Any
+from copy import deepcopy
 
 from pypgtable.table import table
 from pypgtable.pypgtable_typing import TableConfigNorm
@@ -27,7 +28,7 @@ def _get_platform_info() -> dict[str, Any]:
         "python_version": python_version(),
         "system": system(),
         "release": release(),
-        "EGPOps/s": performance,
+        "EGPOps": performance,
     }
 
 
@@ -36,15 +37,16 @@ def get_platform_info(table_config: TableConfigNorm) -> dict[str, Any]:
     """Introspect the system and record it in the platform table as needed."""
     platform_info: dict[str, Any] = _get_platform_info()
     platform_info: dict[str, Any] = platform_info_validator.normalized(platform_info)
-    if not platform_info_validator.validate(platform_info):
+    if platform_info is None or not platform_info_validator.validate(platform_info):
         _logger.error(f"Platform information validation failed:\n{platform_info_validator.error_str()}")
         sys_exit(1)
     pi_table: table = table(table_config)
-    _logger.info("Platform information: %s", str(platform_info))
     if platform_info["signature"] not in pi_table:
         _logger.info("New platform registered.")
         pi_table.insert([platform_info])
     else:
         _logger.info("Platform already registered.")
-    _logger.info(f"Platform details:\n{pformat(platform_info, indent=4)}")
+    pp_pi: dict[str, Any] = deepcopy(platform_info)
+    pp_pi["signature"] = pp_pi["signature"].hex()
+    _logger.info(f"Platform details:\n{pformat(pp_pi)}")
     return platform_info

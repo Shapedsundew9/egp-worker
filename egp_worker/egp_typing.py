@@ -25,7 +25,7 @@ class WorkerConfig(TypedDict):
     worker_id: NotRequired[UUID]
     problem_definitions: NotRequired[str]
     problem_folder: NotRequired[str]
-    population: NotRequired[PopulationsConfig]
+    populations: NotRequired[PopulationsConfig]
     biome: NotRequired[StoreConfig]
     microbiome: NotRequired[StoreConfig]
     gene_pool: NotRequired[StoreConfig]
@@ -38,7 +38,7 @@ class WorkerConfigNorm(TypedDict):
     worker_id: UUID
     problem_definitions: str
     problem_folder: str
-    population: PopulationsConfig
+    populations: PopulationsConfig
     biome: StoreConfigNorm
     microbiome: StoreConfigNorm
     gene_pool: StoreConfigNorm
