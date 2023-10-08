@@ -72,7 +72,9 @@
         "default": {},
         "schema": {
             "configs": {
+                "default": [{}],
                 "schema": {
+                    "default": {},
                     "schema": {},
                     "type": "dict"
                 },

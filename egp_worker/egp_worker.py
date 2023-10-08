@@ -6,31 +6,33 @@ from logging import Logger, NullHandler, getLogger
 from os import W_OK, access, chdir, cpu_count, getcwd
 from os.path import dirname, exists, join
 from pathlib import Path
+from sys import argv
 from sys import exit as sys_exit
 from typing import Any, Iterator, cast
 from uuid import UUID, uuid4
-from sys import argv
 
 from egp_population.egp_typing import PopulationConfigNorm
 from egp_population.population_config import (configure_populations,
                                               new_population,
-                                              population_table_default_config)
+                                              population_table_default_config,
+                                              populations_default_config)
 from egp_stores.egp_typing import GenePoolConfigNorm
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
 from egp_stores.genomic_library import default_config as gl_default_config
 from egp_stores.genomic_library import genomic_library
 from egp_utils.egp_logo import gallery, header, header_lines
-from pypgtable import table
 from pypgtable import __name__ as pypgtable_name
+from pypgtable import table
 from pypgtable.common import connection_str_from_config
 from pypgtable.pypgtable_typing import TableConfigNorm
 from pypgtable.validators import table_config_validator
 from requests import Response, get
 
-from .config_validator import dump_config, load_config, generate_config
+from .config_validator import dump_config, generate_config, load_config
 from .egp_typing import WorkerConfigNorm
 from .platform_info import get_platform_info
+from .subprocess_evolution import evolve
 
 _logger: Logger = getLogger(__name__)
 _logger.addHandler(NullHandler())
@@ -79,7 +81,7 @@ def parse_cmdline_args(args: list[str]) -> Namespace:
     return parser.parse_args(args)
 
 
-def launch_workers(args: Namespace) -> None:
+def launch_worker(args: Namespace) -> None:
     """Launch the worker."""
 
     # Erasmus header to stdout and logfile
@@ -100,6 +102,7 @@ def launch_workers(args: Namespace) -> None:
     # Load & validate worker configuration
     if args.use_default_config:
         config: WorkerConfigNorm = generate_config()
+        config["populations"] = populations_default_config()
     else:
         config: WorkerConfigNorm = load_config(args.config_file)
 
@@ -172,7 +175,6 @@ def launch_workers(args: Namespace) -> None:
         config["populations"], problem_definitions, p_table_config)
     p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
     p_table: table = p_config_tuple[1]
-    pm_table: table = p_config_tuple[2]
 
     # Define genomic library configuration & instanciate
     gl_config: TableConfigNorm = gl_default_config()
@@ -212,7 +214,7 @@ def launch_workers(args: Namespace) -> None:
         w_table_config["schema"] = {k: table_config_validator.normalized(v) for k, v in load(file_ptr).items()}
     w_table: table = table(w_table_config)
     num_cores: int | None = cpu_count()
-    sub_processes: int = 1 if num_cores is None or num_cores == 1 else num_cores - 1
+    sub_processes: int = 0 if num_cores is None or num_cores == 1 else num_cores - 1
     w_data: dict[str, Any] = {
         "worker_id": worker_id,
         "populations": [p["uid"] for p in p_configs.values()],
@@ -223,11 +225,15 @@ def launch_workers(args: Namespace) -> None:
         "gene_pool_connection_str": connection_str_from_config(gp_config["gene_pool"]["database"]),
     }
     w_table.insert([w_data])
+    _logger.info(f"Worker {worker_id} registered & configured.")
 
+    # Start the worker
+    evolve(list(p_configs.values()), gpool, w_data["sub_processes"])
 
     # Return whence we came
     chdir(cwd)
+    _logger.info(f"Worker {worker_id} exiting.")
 
 
 if __name__ == "__main__":
-    launch_workers(parse_cmdline_args(argv[1:]))
+    launch_worker(parse_cmdline_args(argv[1:]))

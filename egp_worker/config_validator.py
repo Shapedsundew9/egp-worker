@@ -33,7 +33,6 @@ def generate_config() -> WorkerConfigNorm:
     return config_validator.normalized({})
 
 
-
 # Load & validate worker configuration
 def load_config(filename: str | None = None) -> WorkerConfigNorm:
     """Load and validate the configuration."""
