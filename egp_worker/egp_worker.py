@@ -12,10 +12,12 @@ from typing import Any, Iterator, cast
 from uuid import UUID, uuid4
 
 from egp_population.egp_typing import PopulationConfigNorm
-from egp_population.population_config import (configure_populations,
-                                              new_population,
-                                              population_table_default_config,
-                                              populations_default_config)
+from egp_population.population_config import (
+    configure_populations,
+    new_population,
+    population_table_default_config,
+    populations_default_config,
+)
 from egp_stores.egp_typing import GenePoolConfigNorm
 from egp_stores.gene_pool import default_config as gp_default_config
 from egp_stores.gene_pool import gene_pool
@@ -149,12 +151,12 @@ def launch_worker(args: Namespace) -> None:
 
     # Check the verified problem definitions file
     problem_definitions: list[dict[str, Any]] = []
-    problem_definitions_file: str = join(directory_path, 'egp_problems.json')
+    problem_definitions_file: str = join(directory_path, "egp_problems.json")
     problem_definitions_file_exists: bool = exists(problem_definitions_file)
     if not problem_definitions_file_exists:
         _logger.info(f"The egp_problems.json does not exist in {directory_path}'. Pulling from {config['problem_definitions']}")
-        response: Response = get(config['problem_definitions'], timeout=30)
-        if (problem_definitions_file_exists := response.status_code == 200):
+        response: Response = get(config["problem_definitions"], timeout=30)
+        if problem_definitions_file_exists := response.status_code == 200:
             with open(problem_definitions_file, "wb") as file:
                 file.write(response.content)
             _logger.info("File 'egp_problems.json' downloaded successfully.")
@@ -172,7 +174,8 @@ def launch_worker(args: Namespace) -> None:
     for p_config in config["populations"].get("configs", []):
         p_config["worker_id"] = worker_id
     p_config_tuple: tuple[dict[int, PopulationConfigNorm], table, table] = configure_populations(
-        config["populations"], problem_definitions, p_table_config)
+        config["populations"], problem_definitions, p_table_config
+    )
     p_configs: dict[int, PopulationConfigNorm] = p_config_tuple[0]
     p_table: table = p_config_tuple[1]
 

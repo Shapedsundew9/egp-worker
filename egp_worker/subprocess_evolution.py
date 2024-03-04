@@ -11,8 +11,7 @@ from typing import Literal
 from functools import partial
 from numpy import single
 
-from egp_physics.physics import (pGC_fitness, population_GC_evolvability,
-                                 population_GC_inherit, select_pGC)
+from egp_physics.physics import pGC_fitness, population_GC_evolvability, population_GC_inherit, select_pGC
 from egp_population.egp_typing import PopulationConfigNorm
 from egp_population.population import population
 from egp_stores.gene_pool import gene_pool
@@ -41,6 +40,8 @@ set_start_method("fork")
 # Set by the SIGUSR1 handler to True allowing the sub-process to exit gracefully writing its data
 # to the Gene Pool table when asked.
 _TERMINATE = False
+
+
 def terminate(_: int, __: FrameType | None) -> None:
     """Set the self termination flag.
 
@@ -49,6 +50,8 @@ def terminate(_: int, __: FrameType | None) -> None:
     global _TERMINATE  # pylint: disable=global-statement
     _logger.debug("SIGUSR1 received. Setting self terminate flag.")
     _TERMINATE = True
+
+
 signal(SIGUSR1, terminate)
 
 
@@ -79,7 +82,6 @@ def spawn(p_configs: list[PopulationConfigNorm], g_pool: gene_pool, num_sub_proc
     processes: list[Process] = [Process(target=_entry_point) for _ in range(num_sub_processes)]
     start: float = time()
     for p in processes:
-
         # Sub-processes exit if the parent exits.
         p.daemon = True
         p.start()
@@ -94,7 +96,7 @@ def spawn(p_configs: list[PopulationConfigNorm], g_pool: gene_pool, num_sub_proc
         if p.pid is not None:
             kill(p.pid, SIGUSR1)
         else:
-            raise RuntimeError('Sub-process has no PID.')
+            raise RuntimeError("Sub-process has no PID.")
 
     for p in processes:
         p.join()
@@ -107,7 +109,7 @@ def spawn(p_configs: list[PopulationConfigNorm], g_pool: gene_pool, num_sub_proc
 
 
 def memory_ok(start: float) -> bool:
-    """"Check if, after a minimum runtime, memory available is low.
+    """ "Check if, after a minimum runtime, memory available is low.
 
     Only if we have been
     running for more than _MINIMUM_SUBPROCESS_TIME seconds do we check to see
@@ -128,8 +130,7 @@ def memory_ok(start: float) -> bool:
     available: int = virtual_memory().available
     ok: bool = available > _MINIMUM_AVAILABLE_MEMORY
     if not ok:
-        _logger.info(f'Available memory is low ({available} bytes) after {duration}s.'
-                        ' Signalling sub-processes to terminate.')
+        _logger.info(f"Available memory is low ({available} bytes) after {duration}s." " Signalling sub-processes to terminate.")
     return ok
 
 
@@ -156,14 +157,15 @@ def viable_individual(individual, population_oih) -> bool:
     (bool): True if the individual is viable else False.
     """
     if _LOG_DEBUG:
-        _logger.debug(f'Potentially viable individual {individual}')
+        _logger.debug(f"Potentially viable individual {individual}")
 
     if individual is None:
         return False
 
     # Check the interface is correct
-    individual_oih: int = ordered_interface_hash(individual['input_types'], individual['output_types'],
-                                            individual['inputs'], individual['outputs'])
+    individual_oih: int = ordered_interface_hash(
+        individual["input_types"], individual["output_types"], individual["inputs"], individual["outputs"]
+    )
 
     if _LOG_DEBUG:
         _logger.debug(f"Individual is {('NOT ', '')[population_oih == individual_oih]}viable.")
@@ -191,17 +193,16 @@ def generation(p_config: PopulationConfigNorm, g_pool: gene_pool) -> bool:
     # TODO: Can optimize how much xGC creation we do here. Append new xGCs to a list and
     #       only create them once. Also do not create the whole population list if survivability
     #       is only being calculated for active individuals.
-    populous: population = population(g_pool.pool.get_population(p_config['uid']))
+    populous: population = population(g_pool.pool.get_population(p_config["uid"]))
     active_populus: population = populous.active()
     if len(active_populus):
-
         if _LOG_DEBUG:
             _logger.debug(f'Evolving population {p_config["name"]}, UID: {p_config["uid"]}')
 
         for count, individual in enumerate(active_populus):
             pgc: pGC = select_pGC(g_pool, individual)
             if _LOG_DEBUG:
-                _logger.debug(f'Individual ({count + 1}/{len(active_populus)}): {individual}')
+                _logger.debug(f"Individual ({count + 1}/{len(active_populus)}): {individual}")
                 _logger.debug(f"Mutating with pGC {pgc['ref']}")
 
             wrapped_pgc_exec = create_callable(pgc, g_pool.pool)
@@ -214,13 +215,13 @@ def generation(p_config: PopulationConfigNorm, g_pool: gene_pool) -> bool:
                 offspring = result[0]
 
             if _LOG_DEBUG:
-                _logger.debug(f'Offspring ({count + 1}/{len(active_populus)}): {offspring}')
+                _logger.debug(f"Offspring ({count + 1}/{len(active_populus)}): {offspring}")
 
-            if offspring is not None and viable_individual(offspring, p_config['ordered_interface_hash']):
+            if offspring is not None and viable_individual(offspring, p_config["ordered_interface_hash"]):
                 offspring_exec = create_callable(offspring, g_pool.pool)
-                offspring['fitness'] = p_config['fitness_function'](offspring_exec)
+                offspring["fitness"] = p_config["fitness_function"](offspring_exec)
                 population_GC_inherit(offspring, individual, pgc)
-                delta_fitness = offspring['fitness'] - individual['fitness']
+                delta_fitness = offspring["fitness"] - individual["fitness"]
                 # TODO: Arrange so this cast is not needed
                 population_GC_evolvability(individual, delta_fitness)
             else:
@@ -230,8 +231,8 @@ def generation(p_config: PopulationConfigNorm, g_pool: gene_pool) -> bool:
 
         # Update survivabilities as the population has changed
         if _LOG_DEBUG:
-            _logger.debug('Re-characterizing survivability of population.')
-        p_config['survivability_function'](populous)
+            _logger.debug("Re-characterizing survivability of population.")
+        p_config["survivability_function"](populous)
 
         # TODO: Metrics, GC population management
         return True
@@ -242,7 +243,7 @@ def evolve(p_configs: list[PopulationConfigNorm], g_pool: gene_pool, num_sub_pro
     """Co-evolve the population in pop_list."""
     pre_evolution_checks()
     while not exit_criteria():
-        _logger.info(f'Starting new epoch with {num_sub_processes} sub-processes.')
+        _logger.info(f"Starting new epoch with {num_sub_processes} sub-processes.")
         if num_sub_processes > 1:
             spawn(p_configs, g_pool, num_sub_processes)
         else:
